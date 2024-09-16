@@ -37,7 +37,7 @@ function New-IsoFile {
             if ($PSVersionTable.PSEdition -eq 'Desktop') { # Is BuiltIn Windows PowerShell
                 ($cp = New-Object CodeDom.Compiler.CompilerParameters).CompilerOptions = '/unsafe'
                 Add-Type -CompilerParameters $cp -TypeDefinition $CSharpCode
-            }else{
+            }else{ # Powershell Core (7)
                 Add-Type -CompilerOptions "/unsafe" -TypeDefinition $CSharpCode
             }
         }
