@@ -84,9 +84,7 @@ function New-IsoFile {
 }
 
 #Resolve-Path will get the absolute path
-$Title = "autounattend"
-$Source = (Resolve-Path -Path ".\autounattend.xml").Path
-$FileName = "\windows-autounattend_$((Get-Date).ToString('yyyy-MM-dd_hh-mm-ss_ffff_tt')).iso"
-$Output = (Resolve-Path -Path ".").Path + $FileName
+$XMLSource = (Resolve-Path -Path ".\autounattend.xml").Path
+$OutputISO = (Resolve-Path -Path ".").Path + "\windows-autounattend_$((Get-Date).ToString('yyyy-MM-dd_hh-mm-ss_ffff_tt')).iso"
 
-New-IsoFile -Source $Source -Path $Output -Media "CDR" -Title $Title
+New-IsoFile -Source $XMLSource -Path $OutputISO -Media "CDR" -Title "autounattend"
