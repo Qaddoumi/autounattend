@@ -7,15 +7,17 @@
 			<SetupUILanguage>
 				<UILanguage>en-US</UILanguage>
 			</SetupUILanguage>
-			<InputLocale>0409:00000409</InputLocale>
-			<SystemLocale>en-US</SystemLocale>
-			<UILanguage>en-US</UILanguage>
-			<UserLocale>en-US</UserLocale>
+			<SystemLocale>en-CA</SystemLocale>
+			<InputLocale>1009:00001009</InputLocale>
+			<UserLocale>en-CA</UserLocale>
+			<UILanguage>en-CA</UILanguage>
+			<UILanguageFallback>en-US</UILanguageFallback>
 		</component>
 		<component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<UserData>
 				<ProductKey>
 					<Key>00000-00000-00000-00000-00000</Key>
+					<WillShowUI>Never</WillShowUI>
 				</ProductKey>
 				<AcceptEula>true</AcceptEula>
 			</UserData>
@@ -242,12 +244,13 @@
 			<DisableAutoUpdate>true</DisableAutoUpdate>
 		</component>
 		<component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-			<InputLocale>0409:00000409</InputLocale>
-			<SystemLocale>en-US</SystemLocale>
-			<UILanguage>en-US</UILanguage>
-			<UserLocale>en-US</UserLocale>
+			<InputLocale>1009:00001009</InputLocale>
+			<SystemLocale>en-CA</SystemLocale>
+			<UILanguage>en-CA</UILanguage>
+			<UserLocale>en-CA</UserLocale>
 		</component>
 		<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+			<TimeZone>Jordan Standard Time</TimeZone>
 			<UserAccounts>
 				<LocalAccounts>
 					<LocalAccount wcm:action="add">
@@ -263,7 +266,7 @@
 			<AutoLogon>
 				<Username>admin</Username>
 				<Enabled>true</Enabled>
-				<LogonCount>1</LogonCount>
+				<LogonCount>9999</LogonCount>
 				<Password>
 					<Value>admin</Value>
 					<PlainText>true</PlainText>
@@ -279,7 +282,7 @@
 			<FirstLogonCommands>
 				<SynchronousCommand wcm:action="add">
 					<Order>1</Order>
-					<CommandLine>reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 0 /f</CommandLine>
+					<CommandLine>reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 9999 /f</CommandLine>
 				</SynchronousCommand>
 				<SynchronousCommand wcm:action="add">
 					<Order>2</Order>
