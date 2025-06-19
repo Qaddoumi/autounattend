@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
-	<!--https://schneegans.de/windows/unattend-generator/?LanguageMode=Unattended&UILanguage=en-US&Locale=en-US&Keyboard=00000409&GeoLocation=244&ProcessorArchitecture=amd64&BypassRequirementsCheck=true&BypassNetworkCheck=true&ComputerNameMode=Random&TimeZoneMode=Implicit&PartitionMode=Interactive&WindowsEditionMode=Unattended&WindowsEdition=pro&UserAccountMode=Unattended&AccountName0=admin&AccountPassword0=admin&AccountGroup0=Administrators&AccountName1=&AccountName2=&AccountName3=&AccountName4=&AutoLogonMode=Own&PasswordExpirationMode=Unlimited&LockoutMode=Default&HideFiles=None&ShowFileExtensions=true&HideEdgeFre=true&DisableFastStartup=true&EnableLongPaths=true&DisableAppSuggestions=true&PreventDeviceEncryption=true&VBoxGuestAdditions=true&VMwareTools=true&VirtIoGuestTools=true&WifiMode=Skip&ExpressSettings=DisableAll&SystemScript1=Write-Host+%22Scripts+to+run+in+the+system+context%2C+before+user+accounts+are+created%22%0D%0AStart-Process+-FilePath+powercfg+-ArgumentList+%22%2Fchange+standby-timeout-ac+0%22+-NoNewWindow+-Wait%0D%0AStart-Process+-FilePath+powercfg+-ArgumentList+%22%2Fchange+standby-timeout-dc+0%22+-NoNewWindow+-Wait%0D%0AStart-Process+-FilePath+powercfg+-ArgumentList+%22%2Fchange+monitor-timeout-ac+20%22+-NoNewWindow+-Wait%0D%0AStart-Process+-FilePath+powercfg+-ArgumentList+%22%2Fchange+monitor-timeout-dc+10%22+-NoNewWindow+-Wait&SystemScriptType1=Ps1&FirstLogonScript1=Write-Host+%22Scripts+to+run+when+the+first+user+logs+on+after+Windows+has+been+installed%22&FirstLogonScriptType1=Ps1&UserOnceScript1=Write-Host+%22Scripts+to+run+whenever+a+user+logs+on+for+the+first+time%22&UserOnceScriptType1=Ps1&WdacMode=Skip-->
+	<!--https://schneegans.de/windows/unattend-generator/?LanguageMode=Unattended&UILanguage=en-US&Locale=en-US&Keyboard=00000409&GeoLocation=244&ProcessorArchitecture=amd64&BypassRequirementsCheck=true&BypassNetworkCheck=true&ComputerNameMode=Random&TimeZoneMode=Implicit&PartitionMode=Interactive&WindowsEditionMode=Unattended&WindowsEdition=pro&UserAccountMode=Unattended&AccountName0=admin&AccountPassword0=admin&AccountGroup0=Administrators&AccountName1=&AccountName2=&AccountName3=&AccountName4=&AutoLogonMode=Own&PasswordExpirationMode=Unlimited&LockoutMode=Default&HideFiles=None&ShowFileExtensions=true&DisableFastStartup=true&EnableLongPaths=true&DisableAppSuggestions=true&VBoxGuestAdditions=true&VMwareTools=true&VirtIoGuestTools=true&WifiMode=Skip&ExpressSettings=DisableAll&WdacMode=Skip-->
 	<settings pass="offlineServicing"></settings>
 	<settings pass="windowsPE">
 		<component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<SetupUILanguage>
 				<UILanguage>en-US</UILanguage>
 			</SetupUILanguage>
-			<SystemLocale>en-CA</SystemLocale>
-			<InputLocale>1009:00001009</InputLocale>
-			<UserLocale>en-CA</UserLocale>
-			<UILanguage>en-CA</UILanguage>
+			<SystemLocale>en-CA-US</SystemLocale>
+			<InputLocale>0409:00000409</InputLocale>
+			<UserLocale>en-CA-US</UserLocale>
+			<UILanguage>en-US</UILanguage>
 			<UILanguageFallback>en-US</UILanguageFallback>
 		</component>
 		<component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<UserData>
 				<ProductKey>
 					<Key>00000-00000-00000-00000-00000</Key>
-					<WillShowUI>Never</WillShowUI>
 				</ProductKey>
 				<AcceptEula>true</AcceptEula>
 			</UserData>
@@ -39,21 +38,6 @@
 	</settings>
 	<settings pass="generalize"></settings>
 	<settings pass="specialize">
-		<component name="Microsoft-Windows-OutOfBoxExperience" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-			<DoNotOpenInitialConfigurationTasksAtLogon>true</DoNotOpenInitialConfigurationTasksAtLogon>
-		</component>
-		<component name="Microsoft-Windows-Security-Licensing-SLC-UX" processorArchitecture="amd64"
-			publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="NonSxS"
-			xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-			<SkipAutoActivation>true</SkipAutoActivation>
-		</component>
-		<component name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64"
-			publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS"
-			xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-			<DoNotOpenServerManagerAtLogon>true</DoNotOpenServerManagerAtLogon>
-		</component>
 		<component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<RunSynchronous>
 				<RunSynchronousCommand wcm:action="add">
@@ -239,10 +223,6 @@
 	<settings pass="auditSystem"></settings>
 	<settings pass="auditUser"></settings>
 	<settings pass="oobeSystem">
-		<component name="Microsoft-Windows-Windows-Update-Client" processorArchitecture="amd64"
-			publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-			<DisableAutoUpdate>true</DisableAutoUpdate>
-		</component>
 		<component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<InputLocale>1009:00001009</InputLocale>
 			<SystemLocale>en-CA</SystemLocale>
@@ -274,8 +254,6 @@
 			</AutoLogon>
 			<OOBE>
 				<ProtectYourPC>3</ProtectYourPC>
-				<SkipUserOOBE>true</SkipUserOOBE>
-				<SkipMachineOOBE>true</SkipMachineOOBE>
 				<HideEULAPage>true</HideEULAPage>
 				<HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
 			</OOBE>
@@ -365,6 +343,27 @@ Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-ac 0" -N
 Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-dc 0" -NoNewWindow -Wait
 Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-ac 20" -NoNewWindow -Wait
 Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-dc 10" -NoNewWindow -Wait
+
+Install-Module -Name DisplayConfig -Scope CurrentUser -Repository PSGallery
+# Import the module if not already imported
+Import-Module DisplayConfig
+
+# Get DisplayId of the active primary monitor
+$display = Get-DisplayInfo | Where-Object { $_.Active -eq $true -and $_.Primary -eq $true }
+
+if ($display) {
+    $displayId = $display.DisplayId
+    Write-Host "Primary active display ID: $displayId"
+
+    # Now apply the desired resolution
+    $desiredWidth = 1920
+    $desiredHeight = 1080
+
+    Set-DisplayResolution -DisplayId $displayId -Width $desiredWidth -Height $desiredHeight
+    Write-Host "Resolution changed to ${desiredWidth}x${desiredHeight}."
+} else {
+    Write-Host "No active primary display found."
+}
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-02.ps1">
 			Write-Host "Scripts to run when the first user logs on after Windows has been installed"
