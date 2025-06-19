@@ -34,7 +34,7 @@ An automated Windows installation configuration tool that creates custom unatten
 ### Linux/macOS
 - `genisoimage` or `mkisofs` package installed
 
-## Installation
+## Installation and Usage
 
 1. Clone this repository:
 ```bash
@@ -42,24 +42,18 @@ git clone https://github.com/yourusername/autounattend.git
 cd autounattend
 ```
 
-2. Make the scripts executable (Linux/macOS):
-```bash
-chmod +x make_unattend_ISO.sh
-```
-
-## Usage
-
-### PowerShell (Windows)
+2. PowerShell (Windows)
 
 ```powershell
 # Generate ISO using PowerShell script
 .\make_unattend_ISO.ps1
 ```
 
-### Bash (Linux/macOS)
+3. Bash (Linux/macOS)
 
 ```bash
 # Generate ISO using Bash script
+chmod +x make_unattend_ISO.sh
 ./make_unattend_ISO.sh
 ```
 
