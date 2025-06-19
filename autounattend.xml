@@ -7,9 +7,9 @@
 			<SetupUILanguage>
 				<UILanguage>en-US</UILanguage>
 			</SetupUILanguage>
-			<SystemLocale>en-CA-US</SystemLocale>
+			<SystemLocale>en-US</SystemLocale>
 			<InputLocale>0409:00000409</InputLocale>
-			<UserLocale>en-CA-US</UserLocale>
+			<UserLocale>en-CA</UserLocale>
 			<UILanguage>en-US</UILanguage>
 			<UILanguageFallback>en-US</UILanguageFallback>
 		</component>
@@ -34,6 +34,12 @@
 					<Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f</Path>
 				</RunSynchronousCommand>
 			</RunSynchronous>
+			<Display>
+				<ColorDepth>32</ColorDepth>
+				<HorizontalResolution>1920</HorizontalResolution>
+				<RefreshRate>144</RefreshRate>
+				<VerticalResolution>1080</VerticalResolution>
+			</Display>
 		</component>
 	</settings>
 	<settings pass="generalize"></settings>
@@ -224,9 +230,9 @@
 	<settings pass="auditUser"></settings>
 	<settings pass="oobeSystem">
 		<component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-			<InputLocale>1009:00001009</InputLocale>
-			<SystemLocale>en-CA</SystemLocale>
-			<UILanguage>en-CA</UILanguage>
+			<InputLocale>0409:00000409</InputLocale>
+			<SystemLocale>en-US</SystemLocale>
+			<UILanguage>en-US</UILanguage>
 			<UserLocale>en-CA</UserLocale>
 		</component>
 		<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
@@ -274,6 +280,11 @@
 					<Order>4</Order> <!-- Set Microsoft Edge to Dark Mode -->
 					<CommandLine>reg.exe add "HKCU\Software\Microsoft\Edge\Theme" /v "Theme" /t REG_SZ /d "1" /f</CommandLine>
 				</SynchronousCommand>
+				<SynchronousCommand wcm:action="add">
+                    <Order>5</Order>
+                    <Description>Set PowerShell Execution Policy</Description>
+                    <CommandLine>powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force"</CommandLine>
+                </SynchronousCommand>
 			</FirstLogonCommands>
 		</component>
 	</settings>
@@ -338,32 +349,11 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 } *&gt;&amp;1 &gt;&gt; "$env:TEMP\VirtIoGuestTools.log";
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-01.ps1">
-Write-Host "Scripts to run in the system context, before user accounts are created"
-Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-ac 0" -NoNewWindow -Wait
-Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-dc 0" -NoNewWindow -Wait
-Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-ac 20" -NoNewWindow -Wait
-Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-dc 10" -NoNewWindow -Wait
-
-Install-Module -Name DisplayConfig -Scope CurrentUser -Repository PSGallery
-# Import the module if not already imported
-Import-Module DisplayConfig
-
-# Get DisplayId of the active primary monitor
-$display = Get-DisplayInfo | Where-Object { $_.Active -eq $true -and $_.Primary -eq $true }
-
-if ($display) {
-    $displayId = $display.DisplayId
-    Write-Host "Primary active display ID: $displayId"
-
-    # Now apply the desired resolution
-    $desiredWidth = 1920
-    $desiredHeight = 1080
-
-    Set-DisplayResolution -DisplayId $displayId -Width $desiredWidth -Height $desiredHeight
-    Write-Host "Resolution changed to ${desiredWidth}x${desiredHeight}."
-} else {
-    Write-Host "No active primary display found."
-}
+			Write-Host "Scripts to run in the system context, before user accounts are created"
+			Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-ac 0" -NoNewWindow -Wait
+			Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-dc 0" -NoNewWindow -Wait
+			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-ac 20" -NoNewWindow -Wait
+			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-dc 10" -NoNewWindow -Wait
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-02.ps1">
 			Write-Host "Scripts to run when the first user logs on after Windows has been installed"
@@ -379,9 +369,44 @@ if ($display) {
 			}
 			[System.IO.File]::WriteAllBytes("$destination\start2.bin", $StartBinaryContent)
 			}
+			# Set the primary monitor resolution to 1920x1080
+
+			Install-PackageProvider -Name NuGet -Force -Verbose
+			Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+			Install-Module -Name DisplayConfig -Repository PSGallery -Force -Verbose
+			# reload PSModulePath specifically
+			#$env:PSModulePath = [System.Environment]::GetEnvironmentVariable("PSModulePath", "Machine") + ";" +
+								[System.Environment]::GetEnvironmentVariable("PSModulePath", "User")
+			# Import the module if not already imported
+			Import-Module DisplayConfig
+
+			# Get DisplayId of the active primary monitor
+			$display = Get-DisplayInfo | Where-Object { $_.Active -eq $true -and $_.Primary -eq $true }
+
+			if ($display) {
+				$displayId = $display.DisplayId
+				Write-Host "Primary active display ID: $displayId"
+
+				# Now apply the desired resolution
+				$desiredWidth = 1920
+				$desiredHeight = 1080
+
+				Set-DisplayResolution -DisplayId $displayId -Width $desiredWidth -Height $desiredHeight
+				Set-DisplayRefreshRate -RefreshRate 144 -DisplayId $displayId
+
+				#$config = Get-DisplayConfig
+				#$config | Set-DisplayResolution -Width 1920 -Height 1080
+				#$config | Set-DisplayRefreshRate -RefreshRate 144
+				#$config | Set-DisplayConfig -BitsPerPixel 32
+				#$config | Use-DisplayConfig
+				
+				Write-Host "Resolution changed to ${desiredWidth}x${desiredHeight}."
+			} else {
+				Write-Host "No active primary display found."
+			}
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
-Write-Host "Scripts to run whenever a user logs on for the first time"
+			Write-Host "Scripts to run whenever a user logs on for the first time"
 		</File>
 	</Extensions>
 </unattend>
