@@ -224,12 +224,6 @@
 					<Path>reg.exe unload "HKU\DefaultUser"</Path>
 				</RunSynchronousCommand>
 			</RunSynchronous>
-			<Display>
-				<ColorDepth>32</ColorDepth>
-				<HorizontalResolution>1920</HorizontalResolution>
-				<RefreshRate>144</RefreshRate>
-				<VerticalResolution>1080</VerticalResolution>
-			</Display>
 		</component>
 	</settings>
 	<settings pass="auditSystem"></settings>
@@ -242,12 +236,6 @@
 			<UserLocale>en-US</UserLocale>
 		</component>
 		<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-			<Display>
-				<ColorDepth>32</ColorDepth>
-				<HorizontalResolution>1920</HorizontalResolution>
-				<RefreshRate>144</RefreshRate>
-				<VerticalResolution>1080</VerticalResolution>
-			</Display>
 			<TimeZone>Jordan Standard Time</TimeZone>
 			<UserAccounts>
 				<LocalAccounts>
@@ -384,7 +372,7 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 			}
 
 			# Set the primary monitor resolution to 1920x1080, refreshRate to 144Hz, bit color to 32-bit
-			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/resolutoin.ps1 | iex
+			irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/resolution.ps1 | iex
 
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
