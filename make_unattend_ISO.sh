@@ -43,6 +43,7 @@ create_iso() {
         echo "Error: Neither genisoimage nor mkisofs found. Please install one of these tools." >&2
         echo "On Ubuntu/Debian: sudo apt-get install genisoimage" >&2
         echo "On RHEL/CentOS: sudo yum install genisoimage" >&2
+        echo "On Arch: sudo pacman -S cdrtools --needed --noconfirm" >&2
         return 1
     fi
     
