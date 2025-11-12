@@ -305,25 +305,29 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 }
         </ExtractScript>
         <File path="C:\Windows\Setup\Scripts\unattend-01.ps1">
-			Write-Host "Scripts to run in the system context, before user accounts are created"
+			Write-Host "Scripts to run in the system context, before user accounts are created" -ForgroundColor Yellow
 			Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-ac 0" -NoNewWindow -Wait
 			Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-dc 0" -NoNewWindow -Wait
 			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-ac 20" -NoNewWindow -Wait
 			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-dc 10" -NoNewWindow -Wait
         </File>
         <File path="C:\Windows\Setup\Scripts\unattend-02.ps1">
-			Write-Host "Scripts to run when the first user logs on after Windows has been installed"
+			Write-Host "Scripts to run when the first user logs on after Windows has been installed" -ForgroundColor Yellow
         </File>
         <File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
-			Write-Host "Scripts to run whenever a user logs on for the first time"
+			Write-Host "Scripts to run whenever a user logs on for the first time" -ForgroundColor Yellow
 
             # Clean the start menu
+            Write-Host "`nRunning start menu cleanup script..." -ForgroundColor Green
             irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/empty_start_menu.ps1 | iex -ErrorAction Continue
             # Install virtual machine drivers
+            Write-Host "`nRunning virtual machine drivers installation script..." -ForgroundColor Green
             irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/installing_virtual_drivers.ps1 | iex -ErrorAction Continue
             # Set the primary monitor resolution to 1920x1080, refreshRate to 144Hz, bit color to 32-bit
+            Write-Host "`nRunning monitor resolution configuration script..." -ForgroundColor Green
 			irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/resolution.ps1 | iex -ErrorAction Continue
             # Download WinConfig script
+            Write-Host "`nRunning WinConfig download script..." -ForgroundColor Green
 			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex -ErrorAction Continue
 
             Pause
