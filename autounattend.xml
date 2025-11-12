@@ -318,13 +318,13 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 			Write-Host "Scripts to run whenever a user logs on for the first time"
 
             # Clean the start menu
-            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/empty_start_menu.ps1 | iex
+            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/empty_start_menu.ps1 | iex --ErrorAction Continue
             # Install virtual machine drivers
-            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/installing_virtual_drivers.ps1 | iex
+            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/installing_virtual_drivers.ps1 | iex --ErrorAction Continue
             # Set the primary monitor resolution to 1920x1080, refreshRate to 144Hz, bit color to 32-bit
-			irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/resolution.ps1 | iex
+			irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/resolution.ps1 | iex --ErrorAction Continue
             # Download WinConfig script
-			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex
+			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex --ErrorAction Continue
 
         </File>
     </Extensions>
