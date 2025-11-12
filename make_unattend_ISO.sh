@@ -7,18 +7,21 @@ echo "==========================================================================
 
 # Function to create ISO file
 create_iso() {
-    local source_file="$1"
-    local output_path="$2"
-    local media_type="$3"
-    local title="$4"
-    local boot_file="$5"
-    local force="$6"
+    local output_path="$1"
+    local media_type="$2"
+    local title="$3"
+    local boot_file="$4"
+    local force="$5"
+    shift 5
+    local source_files=("$@")  # Remaining arguments are source files
     
-    # Validate source file exists
-    if [[ ! -f "$source_file" ]]; then
-        echo "Error: Source file '$source_file' not found" >&2
-        return 1
-    fi
+    # Validate source files exist
+    for source_file in "${source_files[@]}"; do
+        if [[ ! -f "$source_file" ]]; then
+            echo "Error: Source file '$source_file' not found" >&2
+            return 1
+        fi
+    done
     
     # Check if output file exists and force flag
     if [[ -f "$output_path" && "$force" != "true" ]]; then
@@ -68,8 +71,10 @@ create_iso() {
     local temp_dir=$(mktemp -d)
     local cleanup_temp=true
     
-    # Copy source file to temp directory
-    cp "$source_file" "$temp_dir/"
+    # Copy all source files to temp directory
+    for source_file in "${source_files[@]}"; do
+        cp "$source_file" "$temp_dir/"
+    done
     
     # Copy boot file if specified
     if [[ -n "$boot_file" && -f "$boot_file" ]]; then
@@ -80,7 +85,7 @@ create_iso() {
     cmd_args+=("$temp_dir")
     
     echo "Creating ISO with command: $iso_cmd ${cmd_args[*]}"
-    echo "Source: $source_file"
+    echo "Source: ${source_files[*]}"
     echo "Output: $output_path"
     echo "Title: $title"
     echo "Media Type: $media_type"
@@ -110,18 +115,23 @@ create_iso() {
 
 # Main script execution
 main() {
-    local source_file="./autounattend.xml"
+    local output_path=""
     local force_flag=false
     local boot_file=""
     local media_type="CDR"
     local title="autounattend"
+    local source_files=()
     
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             -s|--source)
-                source_file="$2"
-                shift 2
+                # Collect all source files until next flag
+                shift
+                while [[ $# -gt 0 && "$1" != -* ]]; do
+                    source_files+=("$1")
+                    shift
+                done
                 ;;
             -o|--output)
                 output_path="$2"
@@ -164,12 +174,14 @@ main() {
     done
     
     # Get absolute path for source
-    if [[ -f "$source_file" ]]; then
-        source_file=$(realpath "$source_file")
-    else
-        echo "Error: Source file '$source_file' not found" >&2
-        exit 1
-    fi
+    for i in "${!source_files[@]}"; do
+        if [[ -f "${source_files[$i]}" ]]; then
+            source_files[$i]=$(realpath "${source_files[$i]}")
+        else
+            echo "Error: Source file '${source_files[$i]}' not found" >&2
+            exit 1
+        fi
+    done
     
     # Generate output path if not specified
     if [[ -z "$output_path" ]]; then
@@ -181,7 +193,7 @@ main() {
     output_path=$(realpath "$output_path" 2>/dev/null || echo "$output_path")
     
     echo "Configuration:"
-    echo "  Source file: $source_file"
+    echo "  Source files: ${source_files[*]}"
     echo "  Output ISO: $output_path"
     echo "  Title: $title"
     echo "  Media type: $media_type"
@@ -190,7 +202,7 @@ main() {
     echo ""
     
     # Create the ISO
-    create_iso "$source_file" "$output_path" "$media_type" "$title" "$boot_file" "$force_flag"
+    create_iso "$output_path" "$media_type" "$title" "$boot_file" "$force_flag" "${source_files[@]}"
 }
 
 # Run main function with all arguments
