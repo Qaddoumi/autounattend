@@ -203,14 +203,14 @@
                     <Order>39</Order>
                     <Path>reg.exe add "HKU:\DefaultUser\Software\Policies\Microsoft\Windows\Windows AI" /v TurnOffSavingSnapshots /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
-                <!-- <RunSynchronousCommand wcm:action="add">
-                    <Order>40</Order>
-                    <Path>reg.exe add "HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "unattend-03" /t REG_SZ /d "powershell.exe -NoProfile -Command \"Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression;\"" /f</Path>
-                </RunSynchronousCommand> -->
                 <RunSynchronousCommand wcm:action="add">
                     <Order>40</Order>
-                    <Path>powershell.exe -NoProfile -Command "Register-ScheduledTask -TaskName 'FirstLogonSetup' -Trigger (New-ScheduledTaskTrigger -AtLogOn) -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\Windows\Setup\Scripts\unattend-03.ps1') -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -RunLevel Highest -Force"</Path>
+                    <Path>reg.exe add "HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "unattend-03" /t REG_SZ /d "powershell.exe -NoProfile -Command \"Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression;\"" /f</Path>
                 </RunSynchronousCommand>
+                <!-- <RunSynchronousCommand wcm:action="add">
+                    <Order>40</Order>
+                    <Path>powershell.exe -NoProfile -Command "Register-ScheduledTask -TaskName 'FirstLogonSetup' -Trigger (New-ScheduledTaskTrigger -AtLogOn) -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\Windows\Setup\Scripts\unattend-03.ps1') -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -RunLevel Highest -Force"</Path>
+                </RunSynchronousCommand> -->
                 <RunSynchronousCommand wcm:action="add">
                     <Order>41</Order>
                     <Path>reg.exe unload "HKU\DefaultUser"</Path>
