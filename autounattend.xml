@@ -284,10 +284,15 @@
                     <Description>Run unattend-03 script</Description>
                     <CommandLine>cmd.exe /c "powershell.exe -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression;" &gt;&gt;"C:\Windows\Setup\Scripts\unattend-03.log" 2&gt;&amp;1"</CommandLine>
                 </SynchronousCommand> -->
-                <SynchronousCommand wcm:action="add">
+                <!-- <SynchronousCommand wcm:action="add">
                     <Order>6</Order>
                     <Description>Run unattend-03 script Asynchronously</Description>
                     <CommandLine>powershell.exe -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -NoExit -Command &quot;&amp; {Get-Content -LiteralPath ''C:\Windows\Setup\Scripts\unattend-03.ps1'' -Raw | Invoke-Expression}&quot;'"</CommandLine>
+                </SynchronousCommand> -->
+                <SynchronousCommand wcm:action="add">
+                    <Order>6</Order>
+                    <Description>Run unattend-03 script Asynchronously</Description>
+                    <CommandLine>cmd.exe /c START powershell.exe -NoProfile -NoExit -Command "&amp; {Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression}"</CommandLine>
                 </SynchronousCommand>
             </FirstLogonCommands>
         </component>
