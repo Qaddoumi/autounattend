@@ -203,16 +203,16 @@
                     <Order>39</Order>
                     <Path>reg.exe add "HKU:\DefaultUser\Software\Policies\Microsoft\Windows\Windows AI" /v TurnOffSavingSnapshots /t REG_DWORD /d 1 /f</Path>
                 </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
+                <!-- <RunSynchronousCommand wcm:action="add">
                     <Order>40</Order>
                     <Path>reg.exe add "HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "unattend-03" /t REG_SZ /d "powershell.exe -NoProfile -Command \"Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression;\"" /f</Path>
-                </RunSynchronousCommand>
+                </RunSynchronousCommand> -->
                 <!-- <RunSynchronousCommand wcm:action="add">
                     <Order>40</Order>
                     <Path>powershell.exe -NoProfile -Command "Register-ScheduledTask -TaskName 'FirstLogonSetup' -Trigger (New-ScheduledTaskTrigger -AtLogOn) -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\Windows\Setup\Scripts\unattend-03.ps1') -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -RunLevel Highest -Force"</Path>
                 </RunSynchronousCommand> -->
                 <RunSynchronousCommand wcm:action="add">
-                    <Order>41</Order>
+                    <Order>40</Order>
                     <Path>reg.exe unload "HKU\DefaultUser"</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
@@ -279,6 +279,16 @@
                     <Description>Set PowerShell Execution Policy</Description>
                     <CommandLine>powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force"</CommandLine>
                 </SynchronousCommand>
+                <!-- <SynchronousCommand wcm:action="add">
+                    <Order>6</Order>
+                    <Description>Run unattend-03 script</Description>
+                    <CommandLine>cmd.exe /c "powershell.exe -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression;" &gt;&gt;"C:\Windows\Setup\Scripts\unattend-03.log" 2&gt;&amp;1"</CommandLine>
+                </SynchronousCommand> -->
+                <SynchronousCommand wcm:action="add">
+                    <Order>6</Order>
+                    <Description>Run unattend-03 script Asynchronously</Description>
+                    <CommandLine>powershell.exe -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -NoExit -Command &quot;&amp; {Get-Content -LiteralPath ''C:\Windows\Setup\Scripts\unattend-03.ps1'' -Raw | Invoke-Expression}&quot;'"</CommandLine>
+                </SynchronousCommand>
             </FirstLogonCommands>
         </component>
     </settings>
@@ -310,6 +320,41 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 			Start-Process -FilePath powercfg -ArgumentList "/change standby-timeout-dc 0" -NoNewWindow -Wait
 			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-ac 20" -NoNewWindow -Wait
 			Start-Process -FilePath powercfg -ArgumentList "/change monitor-timeout-dc 10" -NoNewWindow -Wait
+
+            # Registry settings array
+            $regSettings = @(
+                @{Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "ShowFirstSignInAnimation"; Type = "DWORD"; Value = 0},
+                @{Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "EnableFirstLogonAnimation"; Type = "DWORD"; Value = 0},
+                @{Path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"; Name = "EnableFirstLogonAnimation"; Type = "DWORD"; Value = 0}
+            )
+            
+            # Loop through and set registry values
+            foreach ($setting in $regSettings) {
+                $Path = $setting.Path
+                $Name = $setting.Name
+                $Type = $setting.Type
+                $Value = $setting.Value
+                
+                If (!(Test-Path $Path)) {
+                    Write-Warning "$Path was not found, Creating..."
+                    New-Item -Path $Path -Force -ErrorAction Continue | Out-Null
+                }
+                Try {
+                    Write-Host "Setting registry key: $Name at $Path" -ForegroundColor Cyan
+                    New-ItemProperty -Path $Path -Name $Name -PropertyType $Type -Value $Value -Force | Out-Null
+                }
+                Catch [System.Security.SecurityException] {
+                    Write-Warning "Unable to set $Path\$Name to $Value due to a Security Exception"
+                }
+                Catch [System.Management.Automation.ItemNotFoundException] {
+                    Write-Warning $PSItem.Exception.ErrorRecord
+                }
+                Catch {
+                    Write-Warning "Unable to set $Name due to unhandled exception"
+                    Write-Warning $PSItem.Exception.StackTrace
+                }
+            }
+
         </File>
         <File path="C:\Windows\Setup\Scripts\unattend-02.ps1">
 			Write-Host "Scripts to run when the first user logs on after Windows has been installed" -ForegroundColor Yellow
@@ -329,7 +374,11 @@ foreach( $file in $Document.unattend.Extensions.File ) {
             # Download WinConfig script
             Write-Host "`nRunning WinConfig download script..." -ForegroundColor Green
 			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex -ErrorAction Continue
-
+            # Launch WinConfig
+            Write-Host "`nLaunching WinConfig..." -ForegroundColor Green
+            Set-Location "$($env:USERPROFILE)\Desktop\winconfig-main"
+            &amp; .\InstallAllTweaksWithoutTheApps.ps1 -ScriptLocation "$($env:USERPROFILE)\Desktop\winconfig-main" -ErrorAction Continue
+            
             Pause
 
         </File>
