@@ -367,29 +367,7 @@ foreach( $file in $Document.unattend.Extensions.File ) {
         <File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
 			Write-Host "Scripts to run whenever a user logs on for the first time" -ForegroundColor Yellow
 
-            # Clean the start menu
-            Write-Host "`nRunning start menu cleanup script..." -ForegroundColor Green
-            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/empty_start_menu.ps1 | iex -ErrorAction Continue
-            # Install virtual machine drivers
-            Write-Host "`nRunning virtual machine drivers installation script..." -ForegroundColor Green
-            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/installing_virtual_drivers.ps1 | iex -ErrorAction Continue
-            # Set the primary monitor resolution to 1920x1080, refreshRate to 144Hz, bit color to 32-bit
-            Write-Host "`nRunning monitor resolution configuration script..." -ForegroundColor Green
-			irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/resolution.ps1 | iex -ErrorAction Continue
-            # Download WinConfig script
-            Write-Host "`nRunning WinConfig download script..." -ForegroundColor Green
-			irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex -ErrorAction Continue
-            # Launch WinConfig
-            Write-Host "`nLaunching WinConfig..." -ForegroundColor Green
-            Set-Location "$($env:USERPROFILE)\Desktop\winconfig-main"
-            &amp; .\InstallAllTweaksWithoutTheApps.ps1 -ScriptLocation "$($env:USERPROFILE)\Desktop\winconfig-main" -ErrorAction Continue
-            Write-Host "`nCleaning ..." -ForegroundColor Green
-            Remove-Item -Path "$($env:USERPROFILE)\Desktop\winconfig-main" -Recurse -Force -ErrorAction Continue
-            Remove-Item -Path "$($env:USERPROFILE)\Desktop\winconfig.lnk" -Force -ErrorAction Continue
-
-            Write-Host "`nAll done! Enjoy your optimized Windows installation." -ForegroundColor Yellow
-            
-            Pause
+            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/RunAll.ps1 | iex -ErrorAction Continue
 
         </File>
     </Extensions>
