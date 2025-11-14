@@ -2,6 +2,54 @@
 
 set -e  # Exit on error
 
+# Cleanup function to ensure proper unmounting
+cleanup_on_exit() {
+    local exit_code=$?
+    echo ""
+    echo "Performing cleanup..."
+    
+    # Force unmount WIM if it's still mounted
+    if mountpoint -q "$wimMountPoint" 2>/dev/null || [ -d "$wimMountPoint" ]; then
+        echo "  - Force unmounting WIM image..."
+        sudo wimlib-imagex unmount "$wimMountPoint" --commit 2>/dev/null || \
+        sudo umount -l "$wimMountPoint" 2>/dev/null || \
+        sudo fusermount -uz "$wimMountPoint" 2>/dev/null || true
+        sleep 1
+    fi
+    
+    # Unmount ISOs
+    if mountpoint -q "$windowsISOMount" 2>/dev/null; then
+        echo "  - Unmounting Windows ISO..."
+        sudo umount "$windowsISOMount" 2>/dev/null || true
+    fi
+    
+    if mountpoint -q "$virtioISOMount" 2>/dev/null; then
+        echo "  - Unmounting VirtIO ISO..."
+        sudo umount "$virtioISOMount" 2>/dev/null || true
+    fi
+    
+    # Wait a bit for unmounts to complete
+    sleep 1
+    
+    # Remove directories
+    echo "  - Removing temporary directories..."
+    rm -rf "$windowsISOMount" "$virtioISOMount" "$modifiedISODir" 2>/dev/null || true
+    
+    # Force remove wim mount point
+    if [ -d "$wimMountPoint" ]; then
+        sudo rm -rf "$wimMountPoint" 2>/dev/null || true
+    fi
+    
+    if [ $exit_code -eq 0 ]; then
+        echo "  - Cleanup completed successfully"
+    else
+        echo "  - Cleanup completed (script had errors)"
+    fi
+}
+
+# Register cleanup function to run on script exit
+trap cleanup_on_exit EXIT
+
 echo "========================================="
 echo "Windows ISO VirtIO Driver Injection Tool"
 echo "========================================="
@@ -9,7 +57,7 @@ echo "========================================="
 # Install dependencies
 echo ""
 echo "[1/10] Installing dependencies..."
-sudo pacman -S cdrtools libguestfs wimlib --needed --noconfirm
+sudo pacman -S cdrtools libguestfs wimlib fuse2 --needed --noconfirm
 
 # Variables - Remove spaces and use full paths
 windowsISO=/home/$USER/ISOs/26200.6584.250915-1905.25h2_ge_release_svc_refresh_CLIENT_CONSUMER_x64FRE_en-us.iso
@@ -18,7 +66,7 @@ virtioISO=/home/$USER/ISOs/Windows-virtio-0.1.285.iso
 windowsISOMount=/home/$USER/windows-iso
 virtioISOMount=/home/$USER/virtio-iso
 modifiedISODir=/home/$USER/windows-modified
-wimMountPoint=/tmp/wim-mount
+wimMountPoint=/tmp/wim-mount-$$  # Use PID to make it unique
 
 echo ""
 echo "[2/10] Creating mount points and work directory..."
@@ -42,26 +90,26 @@ echo "[6/10] Injecting drivers into boot.wim..."
 cd "$modifiedISODir/sources"
 
 # Create mount point
-sudo mkdir -p "$wimMountPoint"
+mkdir -p "$wimMountPoint"
 
 # Mount boot.wim with write permissions
 echo "  - Mounting boot.wim (index 2)..."
-sudo wimlib-imagex mountrw boot.wim 2 "$wimMountPoint"
+wimlib-imagex mountrw boot.wim 2 "$wimMountPoint"
 
 # Create drivers directory if it doesn't exist
 echo "  - Creating drivers directory..."
-sudo mkdir -p "$wimMountPoint/drivers/"
+mkdir -p "$wimMountPoint/drivers/"
 
 # Add VirtIO drivers
 echo "  - Copying viostor drivers..."
-sudo cp -r "$virtioISOMount"/viostor "$wimMountPoint/drivers/"
+cp -r "$virtioISOMount"/viostor "$wimMountPoint/drivers/"
 
 echo "  - Copying NetKVM drivers..."
-sudo cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/drivers/"
+cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/drivers/"
 
 # Unmount and commit changes
 echo "  - Committing changes to boot.wim..."
-sudo wimlib-imagex unmount "$wimMountPoint" --commit
+wimlib-imagex unmount "$wimMountPoint" --commit
 
 echo ""
 echo "[7/10] Checking install.wim images..."
@@ -76,19 +124,19 @@ echo "  - Found $image_count image(s) in install.wim"
 # Inject into each image
 for ((i=1; i<=image_count; i++)); do
     echo "  - Processing image $i of $image_count..."
-    sudo wimlib-imagex mountrw install.wim $i "$wimMountPoint"
+    wimlib-imagex mountrw install.wim $i "$wimMountPoint"
     
     echo "    - Creating drivers directory..."
-    sudo mkdir -p "$wimMountPoint/Windows/System32/drivers/"
+    mkdir -p "$wimMountPoint/Windows/System32/drivers/"
     
     echo "    - Copying viostor drivers..."
-    sudo cp -r "$virtioISOMount"/viostor "$wimMountPoint/Windows/System32/drivers/"
+    cp -r "$virtioISOMount"/viostor "$wimMountPoint/Windows/System32/drivers/"
     
     echo "    - Copying NetKVM drivers..."
-    sudo cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/Windows/System32/drivers/"
+    cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/Windows/System32/drivers/"
     
     echo "    - Committing changes..."
-    sudo wimlib-imagex unmount "$wimMountPoint" --commit
+    wimlib-imagex unmount "$wimMountPoint" --commit
 done
 
 echo ""
@@ -98,13 +146,11 @@ cd "$modifiedISODir"
 genisoimage -o ~/Windows-VirtIO.iso \
   -b boot/etfsboot.com -no-emul-boot -boot-load-size 8 \
   -iso-level 2 -J -l -D -N -joliet-long \
-  -relaxed-filenames -V "Windows_VirtIO" \
+  -relaxed-filenames -V "Windows_with_basic_VirtIO" \
   "$modifiedISODir"
 
 echo ""
-echo "[10/10] Cleaning up..."
-sudo umount "$windowsISOMount" "$virtioISOMount"
-sudo rm -rf "$windowsISOMount" "$virtioISOMount" "$modifiedISODir" "$wimMountPoint"
+echo "[10/10] Cleanup will run automatically..."
 
 echo ""
 echo "========================================="
