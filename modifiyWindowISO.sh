@@ -11,8 +11,8 @@ cleanup_on_exit() {
     # Force unmount WIM if it's still mounted
     if mountpoint -q "$wimMountPoint" 2>/dev/null || [ -d "$wimMountPoint" ]; then
         echo "  - Force unmounting WIM image..."
-        sudo wimlib-imagex unmount "$wimMountPoint" --commit 2>/dev/null || \
-        sudo umount -l "$wimMountPoint" 2>/dev/null || \
+        sudo wimlib-imagex unmount "$wimMountPoint" --commit 2>/dev/null || true
+        sudo umount -l "$wimMountPoint" 2>/dev/null || true
         sudo fusermount -uz "$wimMountPoint" 2>/dev/null || true
         sleep 1
     fi
@@ -146,7 +146,7 @@ cd "$modifiedISODir"
 genisoimage -o ~/Windows-VirtIO.iso \
   -b boot/etfsboot.com -no-emul-boot -boot-load-size 8 \
   -iso-level 2 -J -l -D -N -joliet-long \
-  -relaxed-filenames -V "Windows_with_basic_VirtIO" \
+  -relaxed-filenames -V "Windows_VirtIO" \
   "$modifiedISODir"
 
 echo ""
