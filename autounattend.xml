@@ -383,6 +383,11 @@ foreach( $file in $Document.unattend.Extensions.File ) {
             Write-Host "`nLaunching WinConfig..." -ForegroundColor Green
             Set-Location "$($env:USERPROFILE)\Desktop\winconfig-main"
             &amp; .\InstallAllTweaksWithoutTheApps.ps1 -ScriptLocation "$($env:USERPROFILE)\Desktop\winconfig-main" -ErrorAction Continue
+            Write-Host "`nCleaning ..." -ForegroundColor Green
+            Remove-Item -Path "$($env:USERPROFILE)\Desktop\winconfig-main" -Recurse -Force -ErrorAction Continue
+            Remove-Item -Path "$($env:USERPROFILE)\Desktop\winconfig.lnk" -Force -ErrorAction Continue
+
+            Write-Host "`nAll done! Enjoy your optimized Windows installation." -ForegroundColor Yellow
             
             Pause
 
