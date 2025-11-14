@@ -146,7 +146,7 @@ cd "$modifiedISODir"
 genisoimage -o ~/Windows-VirtIO.iso \
   -b boot/etfsboot.com -no-emul-boot -boot-load-size 8 \
   -iso-level 2 -J -l -D -N -joliet-long \
-  -relaxed-filenames -V "Windows_VirtIO" \
+  -relaxed-filenames -V "Windows_with_basic_VirtIO" \
   "$modifiedISODir"
 
 echo ""
