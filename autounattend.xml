@@ -292,7 +292,7 @@
                 <SynchronousCommand wcm:action="add">
                     <Order>6</Order>
                     <Description>Run unattend-03 script Asynchronously</Description>
-                    <CommandLine>cmd.exe /c START powershell.exe -NoProfile -NoExit -Command "&amp; {Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression}"</CommandLine>
+                    <CommandLine>cmd.exe /c START "" powershell.exe -NoProfile -NoExit -Command "&amp; {Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\unattend-03.ps1' -Raw | Invoke-Expression}"</CommandLine>
                 </SynchronousCommand>
             </FirstLogonCommands>
         </component>
