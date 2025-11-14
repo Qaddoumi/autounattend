@@ -57,7 +57,7 @@ echo "========================================="
 # Install dependencies
 echo ""
 echo "[1/10] Installing dependencies..."
-sudo pacman -S cdrtools libguestfs wimlib fuse2 --needed --noconfirm
+sudo pacman -S cdrtools libguestfs wimlib fuse2 xorriso --needed --noconfirm
 
 # Variables - Remove spaces and use full paths
 windowsISO=/home/$USER/ISOs/26200.6584.250915-1905.25h2_ge_release_svc_refresh_CLIENT_CONSUMER_x64FRE_en-us.iso
@@ -96,16 +96,36 @@ mkdir -p "$wimMountPoint"
 echo "  - Mounting boot.wim (index 2)..."
 wimlib-imagex mountrw boot.wim 2 "$wimMountPoint"
 
-# Create drivers directory if it doesn't exist
-echo "  - Creating drivers directory..."
-mkdir -p "$wimMountPoint/drivers/"
+# Copy drivers to appropriate locations
+echo "  - Injecting VirtIO drivers..."
 
-# Add VirtIO drivers
-echo "  - Copying viostor drivers..."
-cp -r "$virtioISOMount"/viostor "$wimMountPoint/drivers/"
+# Create driver directories
+mkdir -p "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
+mkdir -p "$wimMountPoint/Windows/System32/drivers/"
 
-echo "  - Copying NetKVM drivers..."
-cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/drivers/"
+# Copy amd64 drivers (Storage drivers)
+if [ -d "$virtioISOMount/amd64" ]; then
+    echo "    - Copying amd64 drivers..."
+    find "$virtioISOMount/amd64" -name "*.inf" -o -name "*.sys" -o -name "*.cat" -o -name "*.dll" | while read -r driver_file; do
+        cp -v "$driver_file" "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
+        # Also copy .sys files to drivers directory
+        if [[ "$driver_file" == *.sys ]]; then
+            cp -v "$driver_file" "$wimMountPoint/Windows/System32/drivers/"
+        fi
+    done
+fi
+
+# Copy NetKVM drivers
+if [ -d "$virtioISOMount/NetKVM" ]; then
+    echo "    - Copying NetKVM drivers..."
+    find "$virtioISOMount/NetKVM" -name "*.inf" -o -name "*.sys" -o -name "*.cat" -o -name "*.dll" | while read -r driver_file; do
+        cp -v "$driver_file" "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
+        # Also copy .sys files to drivers directory
+        if [[ "$driver_file" == *.sys ]]; then
+            cp -v "$driver_file" "$wimMountPoint/Windows/System32/drivers/"
+        fi
+    done
+fi
 
 # Unmount and commit changes
 echo "  - Committing changes to boot.wim..."
@@ -126,14 +146,31 @@ for ((i=1; i<=image_count; i++)); do
     echo "  - Processing image $i of $image_count..."
     wimlib-imagex mountrw install.wim $i "$wimMountPoint"
     
-    echo "    - Creating drivers directory..."
+    # Create driver directories
+    mkdir -p "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
     mkdir -p "$wimMountPoint/Windows/System32/drivers/"
     
-    echo "    - Copying viostor drivers..."
-    cp -r "$virtioISOMount"/viostor "$wimMountPoint/Windows/System32/drivers/"
+    # Copy amd64 drivers (Storage Drivers)
+    if [ -d "$virtioISOMount/amd64" ]; then
+        echo "    - Copying amd64 drivers..."
+        find "$virtioISOMount/amd64" -name "*.inf" -o -name "*.sys" -o -name "*.cat" -o -name "*.dll" | while read -r driver_file; do
+            cp -v "$driver_file" "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
+            if [[ "$driver_file" == *.sys ]]; then
+                cp -v "$driver_file" "$wimMountPoint/Windows/System32/drivers/"
+            fi
+        done
+    fi
     
-    echo "    - Copying NetKVM drivers..."
-    cp -r "$virtioISOMount"/NetKVM "$wimMountPoint/Windows/System32/drivers/"
+    # Copy NetKVM drivers
+    if [ -d "$virtioISOMount/NetKVM" ]; then
+        echo "    - Copying NetKVM drivers..."
+        find "$virtioISOMount/NetKVM" -name "*.inf" -o -name "*.sys" -o -name "*.cat" -o -name "*.dll" | while read -r driver_file; do
+            cp -v "$driver_file" "$wimMountPoint/Windows/System32/DriverStore/FileRepository/"
+            if [[ "$driver_file" == *.sys ]]; then
+                cp -v "$driver_file" "$wimMountPoint/Windows/System32/drivers/"
+            fi
+        done
+    fi
     
     echo "    - Committing changes..."
     wimlib-imagex unmount "$wimMountPoint" --commit
@@ -143,11 +180,31 @@ echo ""
 echo "[9/10] Creating new bootable ISO (this may take a while)..."
 cd "$modifiedISODir"
 
-genisoimage -o ~/Windows-VirtIO.iso \
-  -b boot/etfsboot.com -no-emul-boot -boot-load-size 8 \
-  -iso-level 2 -J -l -D -N -joliet-long \
-  -relaxed-filenames -V "Windows_with_basic_VirtIO" \
-  "$modifiedISODir"
+# Use xorriso to create a properly bootable Windows ISO
+echo "  - Creating bootable ISO with xorriso..."
+
+# Check if boot files exist
+if [ ! -f "boot/etfsboot.com" ]; then
+    echo "Warning: boot/etfsboot.com not found"
+fi
+
+if [ ! -f "efi/microsoft/boot/efisys.bin" ]; then
+    echo "Warning: efi/microsoft/boot/efisys.bin not found"
+fi
+
+# Create ISO with proper Windows boot structure
+xorriso -as mkisofs \
+  -iso-level 4 \
+  -l -R -J \
+  -b boot/etfsboot.com \
+  -no-emul-boot -boot-load-size 8 -boot-info-table \
+  -eltorito-alt-boot \
+  -e efi/microsoft/boot/efisys.bin \
+  -no-emul-boot \
+  -isohybrid-mbr /usr/lib/syslinux/bios/isohdpfx.bin \
+  -o ~/Windows-VirtIO.iso \
+  -volid "Windows_VirtIO" \
+  ./
 
 echo ""
 echo "[10/10] Cleanup will run automatically..."
