@@ -369,6 +369,8 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 
             irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/RunAll.ps1 | iex -ErrorAction Continue
 
+            exit
+
         </File>
     </Extensions>
 </unattend>
