@@ -366,7 +366,7 @@ foreach( $file in $Document.unattend.Extensions.File ) {
         </File>
         <File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
 			Write-Host "Scripts to run whenever a user logs on for the first time" -ForegroundColor Yellow
-
+            #TODO: Download all files into the temp then run the bat in the desktop ...
             irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/RunAll.ps1 | iex -ErrorAction Continue
 
             exit
