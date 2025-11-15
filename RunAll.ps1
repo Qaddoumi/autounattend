@@ -32,4 +32,4 @@ powershell -NoProfile -Command `"& {Start-Process powershell -ArgumentList '-NoP
 
 Set-Content -Path "$($env:USERPROFILE)\Desktop\RunAll.bat" -Value $batContent -Encoding ASCII
 
-exit
+Pause
