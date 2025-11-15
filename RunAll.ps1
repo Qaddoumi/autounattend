@@ -12,6 +12,7 @@ Write-Host "``nRunning WinConfig download script..." -ForegroundColor Green
 irm https://raw.githubusercontent.com/Qaddoumi/winconfig/main/Download | iex -ErrorAction Continue
 
 Write-Host "``nLaunching WinConfig..." -ForegroundColor Green
+Set-Location -Path "C:\Users\admin\Desktop\winconfig-main"
 & .\InstallAllTweaksWithoutTheApps.ps1 -ScriptLocation "$($env:USERPROFILE)\Desktop\winconfig-main" -ErrorAction Continue
 
 Write-Host "``nCleaning up installation files..." -ForegroundColor Green
