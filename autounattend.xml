@@ -365,9 +365,60 @@ foreach( $file in $Document.unattend.Extensions.File ) {
 			Write-Host "Scripts to run when the first user logs on after Windows has been installed" -ForegroundColor Yellow
         </File>
         <File path="C:\Windows\Setup\Scripts\unattend-03.ps1">
-			Write-Host "Scripts to run whenever a user logs on for the first time" -ForegroundColor Yellow
-            #TODO: Download all files into the temp then run the bat in the desktop ...
-            irm https://raw.githubusercontent.com/Qaddoumi/autounattend/main/RunAll.ps1 | iex -ErrorAction Continue
+			#Write-Host "Scripts to run whenever a user logs on for the first time" -ForegroundColor Yellow
+            &amp;{
+                ################################################################################################
+                $desktopPath = "$($env:USERPROFILE)\Desktop"
+                foreach ( $letter in 'DEFGHIJKLMNOPQRSTUVWXYZ'.ToCharArray() ) {
+                    $winconfigFolder = "${letter}:\winconfig.zip";
+                    if ( Test-Path -LiteralPath $winconfigFolder ) {
+                        try {
+                            Expand-Archive -Path "$winconfigFolder" -DestinationPath $desktopPath -Force
+                        }
+                        catch {
+                            Write-Error "An error occurred while extracting the archive: $_"
+                        }
+                        Copy-Item -Path "${letter}:\scripts.ps1" -Destination "$desktopPath\scripts.ps1" -Force
+                        break
+                    }
+                }
+                ################################################################################################
+                # Specify the target PowerShell command
+                $command = "Set-Location `"$desktopPath\winconfig-main`";&amp; .\Install.ps1"
+                # Specify the path for the shortcut
+                $shortcutPath = Join-Path $desktopPath 'winconfig.lnk'
+                if (Test-Path -Path "$shortcutPath"){
+                    Remove-Item "$shortcutPath" -Force
+                }
+                # Create a shell object
+                $shell = New-Object -ComObject WScript.Shell
+
+                # Create a shortcut object
+                $shortcut = $shell.CreateShortcut($shortcutPath)
+
+                # Set properties of the shortcut
+                $shortcut.TargetPath = "powershell.exe"
+                $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command `"$command`""
+
+                # Save the shortcut
+                $shortcut.Save()
+
+                # Make the shortcut have 'Run as administrator' property on
+                $bytes = [System.IO.File]::ReadAllBytes($shortcutPath)
+                # Set byte value at position 0x15 in hex, or 21 in decimal, from the value 0x00 to 0x20 in hex
+                $bytes[0x15] = $bytes[0x15] -bor 0x20
+                [System.IO.File]::WriteAllBytes($shortcutPath, $bytes)
+
+                Write-Host "Shortcut created at: $shortcutPath"
+
+                ################################################################################################
+                $batContent = "@echo off
+                powershell -NoProfile -Command `"&amp; {Start-Process powershell -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', '$($env:USERPROFILE)\Desktop\scripts.ps1' -Verb RunAs}`"
+                "
+
+                Set-Content -Path "$($env:USERPROFILE)\Desktop\RunAll.bat" -Value $batContent -Encoding ASCII
+
+            } *&gt;&amp;1&gt;&gt; "$env:TEMP\personalscripts.log";
 
             exit
 
