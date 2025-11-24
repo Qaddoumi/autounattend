@@ -186,7 +186,7 @@ main() {
     # Generate output path if not specified
     if [[ -z "$output_path" ]]; then
         local timestamp=$(date '+%Y-%m-%d_%H-%M-%S_%N_%p')
-        output_path="$(pwd)/windows-autounattend_${timestamp}.iso"
+        output_path="$(pwd)/Windows-autounattend_${timestamp}.iso"
     fi
     
     # Convert to absolute path
